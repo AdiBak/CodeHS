@@ -1,0 +1,674 @@
+/*
+A game.
+User controls player with arrow keys.
+Game starts with player locked in a cell. Cell is a rectangle that is (getWidth(), 40) dimension. 
+Just one flat rectangle spanning the width. And on that rectangle is a red circle (the lock). Player must 
+click the red circle, then it will prompt (user input) player for answer to math question (i.e. what's 3 x 10 - 23?)
+Then if answered correctly, cell gets destroyed (removed). Player can now go outside and moves toward
+swarm of green circles (virus). He has an antedote gun (given by the cell before it got removed). He
+must shoot down the swarm of virus, and they'll shoot bacteria back at him. Player has 100 health, if he gets shot, -10 health, if health over, game over.
+Once swarm is gone, Player can move forward to the hospital. 
+He should open the lock to the doors (prompt : user input - can be math/science/etc).
+Then once he does, he wins. 
+
+*/
+var setterl2 = false;
+
+
+setSize(400, 480);
+
+var player = new Rectangle(20, 20);
+player.setPosition(getWidth()/2, getHeight()/2);
+player.setColor(Color.blue);
+add(player);
+
+var passedLvl1 = false;
+var endLvl1P = false;
+var endLvl1 = false;
+
+var startLvl2 = false;
+var passedLvl2 = false;
+var endLvl2 = false;
+var canTL = false;
+
+var passedLvl3 = false;
+var endLvl3 = false;
+var startLvl3 = false;
+
+var passedLvl4 = false;
+var startLvl4 = false;
+var lvl4p = false;
+
+
+var touchedStartLock = false;
+var touchedOranLock = false;
+var touchedGreenLock = false;
+var touchedHL = false;
+
+
+var removedGL = false;
+var removedOL = false;
+var removedRL = false;
+
+var canShoot = false;
+var canAim = false;
+
+var gameOverL = false;
+var gameOverW = false;
+
+var oral;
+var grel;
+
+
+var topwall = new Rectangle(getWidth(), 30);
+topwall.setPosition(0, 0);
+add(topwall);
+
+var twlock = new Circle(20);
+twlock.setPosition(getWidth() * 2/3, topwall.getHeight());
+twlock.setColor(Color.red);
+twlock.numHits = 3;
+add(twlock);
+
+var orangel = new Circle(20);
+orangel.setPosition(orangel.getRadius(), getHeight() * 2/3);
+orangel.setColor(Color.orange);
+orangel.numHits = 3;
+
+var greenl = new Circle(20);
+greenl.setPosition(getWidth() - greenl.getRadius(), getHeight()/2);
+greenl.setColor(Color.green);
+greenl.numHits = 3;
+
+var shield = new Rectangle(getWidth()/2, 30);
+shield.setPosition(getWidth()/2 - shield.getWidth()/2, getHeight() * 3/4);
+shield.setColor(Color.RED);
+
+var barr = new Line(0, getHeight()/4, getWidth() + 20, getHeight()/4);
+
+var key = new Circle(10);
+key.setPosition(getWidth()/2, getHeight()/4 - 33);
+key.setColor(Color.grey);
+
+var hosl = new Circle(20);
+hosl.setPosition(getWidth()/2, getHeight()/3);
+hosl.setColor(Color.red);
+
+var doors = new Line(0, getHeight()/5, getWidth() + 20, getHeight()/5);
+
+
+var health = 100;
+var healt = new Text("Health: " + health, "14pt Arial");
+healt.setPosition(5, getHeight() - healt.getHeight());
+
+
+var oraq = ["What force prevents us from flying off into space? ", 
+            "What is the scientific study of the Earth called? ", 
+            "In which city is the Taj Mahal located? ", 
+            "Which city does ISRO (space agency) have its headquarters in? ", 
+            "In which year did India become a republic? "];
+
+var pressing = false;
+
+var eX;
+var eY;
+
+var mdelay = 0;
+var cannonsShot = 0;
+var cha = 0;
+
+var vk = 0;
+
+var darts = [];
+var cannons = [];
+var missiles = [];
+var viruses = [];
+
+var lvl2dir;
+var lvl3dir;
+var lvl4dir;
+
+function start(){
+    var beginLvl1 = readLine("Go to the red circle. Move with arrow keys. Click 'ok' if you're done reading this.");
+    println("--------------------------");
+    keyDownMethod(slide);
+    mouseMoveMethod(mover);
+    mouseClickMethod(shooter);
+    setTimer(game, 50);
+}
+
+function game(){
+    playLvl1();
+    
+    playLvl2();
+    // level 3 code goes here below 
+    playLvl3();
+    
+    playLvl4();
+    
+    if (startLvl3 && !endLvl3){
+        cha++;
+        if (cha == 40){
+            addVirus();
+            cha = 0;
+        }
+    }
+    
+    if (health == 0){
+        stopTimer(game);
+        gameOverL = true;
+    }
+    
+    if (gameOverW){
+        stopTimer(game);
+        var win = new Text("You win!", "23pt Arial");
+        win.setPosition(getWidth()/2 - win.getWidth()/2, getHeight()/2);
+        add(win);
+    }
+    if (gameOverL){
+        var lose = new Text("Game over.", "23pt Arial");
+        lose.setPosition(getWidth()/2 - lose.getWidth()/2, getHeight()/2);
+        add(lose);
+    }
+    
+    moveDarts();
+    
+    cannonControl();
+    
+    moveMissile();
+    
+    moveVirus();
+}
+
+function playLvl1(){
+    if (!passedLvl1){
+        if (!touchedStartLock){
+            var el = getCollidingObject(player);
+            if (el != null){
+                if (el.getType() == "Circle" && el.getColor() == Color.red){
+                    touchedStartLock = true;
+                    var lvl1dir = readLine("Read this carefully. There will be two more locks you need to go to. The first will be orange (appears first) and the second will be green. They both will give you a key code number. Then come back to me and input those numbers, and I will open. Click 'ok' to continue.");
+                    println("------------------");
+                    //println("---------------------");
+                }
+            }
+        } else {
+            add(orangel);
+            if (!touchedOranLock){
+                var bol = getCollidingObject(player);
+                if (bol != null){
+                    if (bol.getType() == "Circle" && bol.getColor() == Color.orange && bol.getX() < 100){
+                        touchedOranLock = true;
+                        oral = Randomizer.nextInt(1000, 5000);
+                        var oranpin = readLine("Here is your 4-digit key code number: " + oral + " --> don't forget it! Now go to the green lock. Click 'ok' to continue.");
+                        println("---------------");
+                    }
+                }
+            } else {
+                add(greenl);
+                if (!touchedGreenLock){
+                    var lil = getCollidingObject(player);
+                    if (lil != null){
+                        if (lil.getType() == "Circle" && lil.getColor() == Color.green && lil.getX() > getWidth() * 3/4){
+                            touchedGreenLock = true;
+                            grel = Randomizer.nextInt(1000, 5000);
+                            var grenpin = readLine("Here is your 4-digit key code number: " + grel + " --> don't forget it! Now go back to the red lock. Click 'ok' to continue.");
+                            println("------------");
+                        }
+                    }
+                }
+            }
+            if (touchedGreenLock && touchedOranLock){
+                var pal = getCollidingObject(player);
+                if (pal != null && pal.getType() == "Circle" && pal.getColor() == Color.red && pal.getX() > getWidth()/2 && pal.getX() < getWidth() * 3/4){
+                    while (true){
+                        var unlock = readInt("Enter the sum for orange and green lock pins here: ");
+                        println("------------------------");
+                        if (unlock == oral + grel){
+                            passedLvl1 = true;
+                            var power1 = readLine("You have a new power: you can shoot darts by aiming with mouse and clicking to shoot. Click 'ok' to continue");
+                            println("-------------------------");
+                            canShoot = true;
+                            canAim = true;
+                            break;
+                        } 
+                    }
+                }
+            }
+        }
+    } else {
+        if (!endLvl1P){
+            var ars1 = readLine("Cross the top of the screen (go above it). Click 'ok' to continue.");
+            println("---------------------------");
+            endLvl1P = true;
+        }
+        remove(topwall);
+        remove(twlock);
+        remove(orangel);
+        remove(greenl);
+        endLvl1 = true;
+    }
+}
+
+function playLvl2(){
+    if (!passedLvl2 && endLvl1){
+        if (player.getY() < 0){
+            setSize(420, 470);
+            player.setPosition(getWidth()/2, getHeight() * 8/9);
+            add(shield);
+            add(healt);
+            add(barr);
+            add(key);
+            addCannons();
+            if (!startLvl2){
+                //var l2 = readLine("Shoot down the green cannons, use red wall as protection, and get the grey key. Once done, cross top of screen. Click 'ok' to continue.");
+               // println("---------------------");
+                lvl2dir = new Text("shoot green cannons (4x per cannon)", "13pt Arial");
+                lvl2dir.setPosition(getWidth() - lvl2dir.getWidth() - 2, getHeight() - 3);
+                add(lvl2dir);
+                startLvl2 = true;
+            }
+        }
+        if (cannonsShot == 5){
+            lvl2dir.setText("get grey lock");
+            lvl2dir.setPosition(getWidth() - lvl2dir.getWidth() - 2, getHeight() - 3);
+            remove(barr);
+            canTL = true;
+        }
+        if (canTL){
+            var kol = getCollidingObject(player);
+            if (kol != null){
+                if (kol.getType() == "Circle" && kol.getColor() == Color.grey){
+                    lvl2dir.setText("cross top of screen");
+                    lvl2dir.setPosition(getWidth() - lvl2dir.getWidth() - 2, getHeight() - 3);
+                    remove(kol);
+                    passedLvl2 = true;
+                }
+            }
+        }
+    } else {
+        remove(shield);
+        endLvl2 = true;
+    }
+}
+
+function playLvl3(){
+    if (!passedLvl3 && passedLvl2){
+        if (player.getY() < 0){
+            player.setPosition(getWidth()/2, getHeight() * 4/5);
+            if (!startLvl3){
+                remove(lvl2dir);
+                lvl3dir = new Text("Shoot the green viruses!", "13pt Arial");
+                lvl3dir.setPosition(getWidth() - lvl3dir.getWidth() - 10, getHeight() - lvl3dir.getHeight());
+                add(lvl3dir);
+                startLvl3 = true;
+            }
+        }
+        if (vk == 25){
+            lvl3dir.setText("cross top of screen");
+            lvl3dir.setPosition(getWidth() - lvl3dir.getWidth() - 10, getHeight() - lvl3dir.getHeight());
+            passedLvl3 = true;
+            endLvl3 = true;
+        }
+    }
+}
+
+function playLvl4(){
+    if (!passedLvl4 && passedLvl3){
+        if (player.getY() < 0){
+            player.setPosition(getWidth()/2, getHeight()/2);
+            if (!startLvl4){
+                remove(lvl3dir);
+                lvl4dir = new Text("go to red lock", "13pt Arial");
+                lvl4dir.setPosition(getWidth() - lvl4dir.getWidth() - 4, getHeight() - 3);
+                add(lvl4dir);
+                startLvl4 = true;
+            }
+            add(hosl);
+            add(doors);
+            addPatients();
+        }
+        var loi = getCollidingObject(player);
+        if (loi != null){
+            if (loi.getType() == "Circle" && loi.getColor() == Color.red){
+                touchedHL = true;
+            }
+        }
+        if (touchedHL){
+            if (!lvl4p){
+                while (true){
+                    var hun = readLine("Enter orange & green lock pins, combined, here to form one 8-digit pin: ");
+                    if (hun == oral + "" + grel){
+                        lvl4p = true;
+                        break;
+                    }
+                }
+            }
+            remove(hosl);
+            remove(doors);
+            remove(lvl4dir);
+            gameOverW = true;
+        }
+    }
+}
+
+function moveDarts(){
+    for (var i = 0; i < darts.length; i++){
+        var cur = darts[i];
+        var dx = Math.cos(cur.dir) * 4;
+        var dy = Math.sin(cur.dir) * 4;
+        cur.move(dx, dy);
+        var lod = getCollidingObject(cur);
+        if (lod != null){
+            if (lod.getType() == "Rectangle"){
+                if (lod.getColor() == Color.red){
+                    remove(cur);
+                    darts.remove(i);
+                }
+            }
+            if (lod.getType() == "Arc"){
+                if (lod.getColor() == Color.green){
+                    remove(cur);
+                    darts.remove(i);
+                    lod.numHits--;
+                }
+            }
+            if (lod.getType() == "Circle"){
+                if (lod.getColor() == Color.green){
+                    remove(cur);
+                    darts.remove(i);
+                    lod.hit = true;
+                }
+            }
+            if (lod.getType() == "Line" && lod.getColor() == Color.black){
+                remove(cur);
+                darts.remove(i);
+            }
+        }
+    }
+}
+
+function cannonControl(){
+    for (var ca = 0; ca < cannons.length; ca++){
+        var pip = cannons[ca];
+        /*var x = Randomizer.nextInt(0, 1000);
+        if (x < 5){
+            var mis = new Circle(5);
+            mis.setPosition(pip.getX(), pip.getY());
+            mis.dir = Math.atan2(mis.getY() - player.getY(), mis.getX() - player.getX());
+            add(mis);
+            missiles.push(mis);
+        }*/
+        if (pip.delayFire == 0){
+            var mis = new Circle(5);
+            mis.setPosition(pip.getX(), pip.getY());
+            mis.dir = Math.atan2(mis.getY() - player.getY(), mis.getX() - player.getX());
+            add(mis);
+            missiles.push(mis);
+            pip.delayFire = Randomizer.nextInt(50, 80);
+        } else {
+            pip.delayFire--;
+        }
+        if (pip.numHits == 0){
+            remove(pip);
+            cannons.remove(ca);
+            cannonsShot++;
+        }
+    }
+}
+
+function moveMissile(){
+    for (var mi = 0; mi < missiles.length; mi++){
+        var mit = missiles[mi];
+        var mdx = Math.cos(mit.dir) * -4;
+        var mdy = Math.sin(mit.dir) * -4;
+        mit.move(mdx, mdy);
+        var tun = getCollidingObject(mit);
+        if (tun != null){
+            if (tun.getType() == "Rectangle"){
+                if (tun.getColor() == Color.red){
+                    remove(mit);
+                    missiles.remove(mi);
+                }
+                if (tun.getColor() == Color.blue){
+                    remove(mit);
+                    missiles.remove(mi);
+                    health -= 5;
+                    healt.setText("Health: " + health);
+                }
+            }
+        }
+    }
+}
+
+function moveVirus(){
+    for (var vi = 0; vi < viruses.length; vi++){
+        var vir = viruses[vi];
+        var vdx = Math.cos(vir.ang) * -3;
+        var vdy = Math.sin(vir.ang) * -3;
+        vir.move(vdx, vdy);
+        var el = getCollidingObject(vir);
+        if (el != null){
+            if (el.getType() == "Rectangle" && el.getColor() == Color.blue){
+                remove(vir);
+                viruses.remove(vi);
+                health -= 5;
+                healt.setText("Health: " + health);
+            }
+        }
+        if (vir.hit == true){
+            remove(vir);
+            viruses.remove(vi);
+            vk++;
+        }
+    }
+}
+
+function mover(e){
+    if (canAim){
+        eX = e.getX();
+        eY = e.getY();
+    }
+}
+
+function shooter(e){
+    if (canShoot && canAim){
+        var m = new Oval(8, 14);
+        m.setPosition(player.getX() + player.getWidth()/2, player.getY() - 1);
+        m.setColor(Color.GREY);
+        m.dir = Math.atan2(eY - m.getY(), eX - m.getX());
+        add(m);
+        darts.push(m);
+        
+    }
+}
+
+
+function slide(e){
+    if (e.keyCode == Keyboard.UP){
+        player.move(0, -6);
+    }
+    if (e.keyCode == Keyboard.LEFT){
+        player.move(-6, 0);
+    }
+    if (e.keyCode == Keyboard.DOWN){
+        player.move(0, 6);
+    }
+    if (e.keyCode == Keyboard.RIGHT){
+        player.move(6, 0);
+    }
+}
+
+function addCannons(){
+    for (var i = 0; i < 5; i++){
+        var c = new Arc(20, 0, 180, 0);
+        c.setPosition(i * 20 * 4 + 50, getHeight()/4);
+        c.setRotation(180);
+        c.setColor(Color.green);
+        c.numHits = 4;
+        c.delayFire = Randomizer.nextInt(50, 80);
+        add(c);
+        cannons.push(c);
+    }
+}
+
+function addVirus(){
+    var v = new Circle(Randomizer.nextInt(5, 10));
+    v.setPosition(Randomizer.nextInt(0, getWidth()), Randomizer.nextInt(-getHeight()/4, 0));
+    v.setColor(Color.green);
+    v.ang = Math.atan2(v.getY() - player.getY(), v.getX() - player.getX());
+    v.mul = Randomizer.nextInt(-4, -1);
+    v.hit = false;
+    add(v);
+    viruses.push(v);
+}
+
+function addPatients(){
+    for (var i = 0; i < 25; i++){
+        var p = new WebImage("https://codehs.com/uploads/e1cacf96bb79cf2f59e0c138505954fd");
+        p.setSize(17, 34);
+        p.setPosition(Randomizer.nextInt(0, getWidth() - p.getWidth()), Randomizer.nextInt(0, doors.getY() - p.getHeight() - 1));
+        add(p);
+    }
+}
+
+function getCollidingObject(shape){
+    if (shape.getType() == "Circle"){
+        var topLeft = getElementAt(shape.getX() - shape.getRadius() - 1, shape.getY() - shape.getRadius() - 1);
+        if (topLeft != null){
+            return topLeft;
+        }
+        
+        var topRight = getElementAt(shape.getX() + shape.getRadius() + 1, shape.getY() - shape.getRadius() - 1);
+        if (topRight != null){
+            return topRight;
+        }
+        
+        var bottomLeft = getElementAt(shape.getX() - shape.getRadius() - 1, shape.getY() + shape.getRadius() + 1);
+        if (bottomLeft != null){
+            return bottomLeft;
+        }
+        
+        var bottomRight = getElementAt(shape.getX() + shape.getRadius() + 1, shape.getY() + shape.getRadius() + 1);
+        if (bottomRight != null){
+            return bottomRight;
+        }
+        
+        var top = getElementAt(shape.getX(), shape.getY() - shape.getRadius() - 1);
+        if (top != null){
+            return top;
+        }
+        
+        var bottom = getElementAt(shape.getX(), shape.getY() + shape.getRadius() + 1);
+        if (bottom != null){
+            return bottom;
+        }
+        
+        var left = getElementAt(shape.getX() - shape.getRadius() - 1, shape.getY());
+        if (left != null){
+            return left;
+        }
+        
+        var right = getElementAt(shape.getX() + shape.getRadius() + 1, shape.getY());
+        if (right != null){
+            return right;
+        }
+        
+        return null;
+    }
+    
+    if (shape.getType() == "Rectangle"){
+        var tL = getElementAt(shape.getX() - 1, shape.getY() - 1);
+        if (tL != null){
+            return tL;
+        }
+        
+        var tR = getElementAt(shape.getX() + shape.getWidth() + 1, shape.getY() - 1);
+        if (tR != null){
+            return tR;
+        }
+        
+        var bL = getElementAt(shape.getX() - 1, shape.getY() + shape.getHeight() + 1);
+        if (bL != null){
+            return bL;
+        }
+        
+        var bR = getElementAt(shape.getX() + shape.getWidth() + 1, shape.getY() + shape.getHeight() + 1);
+        if (bR != null){
+            return bR;
+        }
+        
+        var tp = getElementAt(shape.getX() + shape.getWidth()/2, shape.getY() - 1);
+        if (tp != null){
+            return tp;
+        }
+        
+        var bt = getElementAt(shape.getX() + shape.getWidth()/2, shape.getY() + shape.getHeight() + 1);
+        if (bt != null){
+            return bt;
+        }
+        
+        var le = getElementAt(shape.getX() - 1, shape.getY() + shape.getHeight()/2);
+        if (le != null){
+            return le;
+        }
+        
+        var ri = getElementAt(shape.getX() + shape.getWidth() + 1, shape.getY() + shape.getHeight()/2);
+        if (ri != null){
+            return ri;
+        }
+        
+        return null;
+    }
+    
+    if (shape.getType() == "Oval"){
+        var topL = getElementAt(shape.getX() - shape.getWidth()/2 - 1, shape.getY() - shape.getHeight()/2 - 1);
+        if (topL != null){
+            return topL;
+        }
+        
+        var topR = getElementAt(shape.getX() + shape.getWidth()/2 + 1, shape.getY() - shape.getHeight()/2 - 1);
+        if (topR != null){
+            return topR;
+        }
+        
+        var tim = getElementAt(shape.getX(), shape.getY() - shape.getHeight()/2 - 1);
+        if (tim != null){
+            return tim;
+        }
+        
+        var bot = getElementAt(shape.getX(), shape.getY() + shape.getHeight()/2 + 1);
+        if (bot != null){
+            return bot;
+        }
+        
+        var lef = getElementAt(shape.getX() - shape.getWidth()/2 - 1, shape.getY());
+        if (lef != null){
+            return lef;
+        }
+        
+        var rig = getElementAt(shape.getX() + shape.getWidth()/2 + 1, shape.getY());
+        if (rig != null){
+            return rig;
+        }
+        
+        var botlef = getElementAt(shape.getX() - shape.getWidth()/2 - 1, shape.getY() + shape.getHeight()/2 + 1);
+        if (botlef != null){
+            return botlef;
+        }
+        
+        var botri = getElementAt(shape.getX() + shape.getWidth()/2 + 1, shape.getY() + shape.getHeight()/2 + 1);
+        if (botri != null){
+            return botri;
+        }
+        
+        return null;
+    }
+}
+
+function handleHits(obj){
+    obj.numHits--;
+    if (obj.numHits == 0){
+        remove(obj);
+    }
+}
