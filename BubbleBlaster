@@ -1,0 +1,180 @@
+setSize(400, 480);
+
+var colors = [Color.blue, Color.orange, Color.red, Color.green, Color.purple];
+var txts = ["Blue", "orange", "red", "green", "purple"];
+
+var cols = 10;
+
+var index = Randomizer.nextInt(0, txts.length - 1);
+var color = colors[index];
+
+var arr = [];
+var particles = [];
+
+var current = new Text("Color: " + txts[index], "14pt Arial");
+current.setPosition(8, getHeight() - 8);
+current.setColor(color);
+add(current);
+
+
+var num = 40;
+
+
+var eX;
+var eY;
+
+var base = new Circle(30);
+base.setPosition(getWidth(), getHeight() * 3/4);
+base.setColor(Randomizer.nextColor());
+add(base);
+
+
+function start(){
+    for (var r = 0; r < 4; r++){
+        for (var c = 0; c < cols; c++){
+            var cir = new Circle((getWidth()/cols)/2);
+            cir.setPosition(c * 2 * cir.getRadius() + cir.getRadius(), r * 2 * cir.getRadius() + cir.getRadius());
+            cir.setColor(colors[Randomizer.nextInt(0, colors.length - 1)]);
+            add(cir);
+        }
+    }
+    
+    setTimer(game, 50);
+    mouseClickMethod(shoot);
+}
+
+function shoot(e){
+    eX = e.getX();
+    eY = e.getY();
+    var m = new Circle((getWidth()/cols)/2);
+    m.setPosition(getWidth()/2, getHeight() - m.getRadius() - 1);
+    m.setColor(color);
+    m.dir = Math.atan2(eY - m.getY(), eX - m.getX());
+    add(m);
+    arr.push(m);
+    
+    index = Randomizer.nextInt(0, txts.length - 1);
+    color = colors[index];
+    current.setText("Next Color: " + txts[index]);
+    current.setColor(color);
+}
+
+
+
+function game(){
+    for (var k = 0; k < arr.length; k++){
+        var par = arr[k];
+        var dx = Math.cos(par.dir) * 7;
+        var dy = Math.sin(par.dir) * 7;
+        par.move(dx, dy);
+        var el = getCollidingObject(par);
+        if (el != null){
+            if (el.getType() == "Circle" && el.getColor() == par.getColor() && el.getY() < getHeight()/2){
+                remove(par);
+                arr.remove(k);
+                remove(el);
+                num--;
+                
+            } else {
+                if (el.getType() == "Circle" && el.getY() > getHeight()/2){
+                    remove(par);
+                    arr.remove(k);
+                } else {
+                    remove(par);
+                    arr.remove(k);
+                }
+               
+            }
+        }
+    }
+    
+    if (num == 0){
+        //stopTimer(game);
+        var left = new Text("You win!");
+        left.setPosition(getWidth()/9, getHeight() * 4/5);
+        add(left);
+        
+        base.move(-3, -3);
+        if (base.getY() < getHeight()/3){
+            //remove(base);
+            remove(base);
+            addParticles();
+            
+        }
+    }
+    
+    for (var i = particles.length - 1; i >= 0; i--) {
+        var part = particles[i];
+        if (part.timeToLive == 0) {
+            remove(part);
+            particles.remove(i);
+        } else {
+           // part.dy += part.ddy;
+        part.move(part.dx, part.dy);
+            part.timeToLive--;
+        }
+    }
+}
+
+function addParticles(){
+    for (var i = 0; i < 20; i++) {
+        var p = new Circle(5);
+        p.setPosition(getWidth()/2, getHeight()/3);
+        var r = Randomizer.nextInt(200, 255);
+        var g = Randomizer.nextInt(178, 245);
+        var b = Randomizer.nextInt(0, 50);
+        var color = new Color(r, g, b);
+        p.setColor(color);
+       
+        p.dx = Randomizer.nextFloat(-10, 10);
+        p.dy = Randomizer.nextFloat(-10, 10);
+        //p.ddy = 0.4;
+        p.timeToLive = 20;
+        add(p);
+        particles.push(p);
+    }
+}
+
+function getCollidingObject(player){
+    var topLeft = getElementAt(player.getX() - player.getRadius() - 1, player.getY() - player.getRadius() - 1);
+    if (topLeft != null){
+        return topLeft;
+    }
+    
+    var topRight = getElementAt(player.getX() + player.getRadius() + 1, player.getY() - player.getRadius() - 1);
+    if (topRight != null){
+        return topRight;
+    }
+    
+    var bottomLeft = getElementAt(player.getX() - player.getRadius() - 1, player.getY() + player.getRadius() + 1);
+    if (bottomLeft != null){
+        return bottomLeft;
+    }
+    
+    var bottomRight = getElementAt(player.getX() + player.getRadius() + 1, player.getY() + player.getRadius() + 1);
+    if (bottomRight != null){
+        return bottomRight;
+    }
+    
+    var top = getElementAt(player.getX(), player.getY() - player.getRadius() - 1);
+    if (top != null){
+        return top;
+    }
+    
+    var bottom = getElementAt(player.getX(), player.getY() + player.getRadius() + 1);
+    if (bottom != null){
+        return bottom;
+    }
+    
+    var left = getElementAt(player.getX() - player.getRadius() - 1, player.getY());
+    if (left != null){
+        return left;
+    }
+    
+    var right = getElementAt(player.getX() + player.getRadius() + 1, player.getY());
+    if (right != null){
+        return right;
+    }
+        
+    return null;
+}
