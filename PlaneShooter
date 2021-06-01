@@ -1,0 +1,204 @@
+var HUD = new Rectangle(getWidth(), getHeight()/10);
+HUD.setPosition(0, getHeight() - HUD.getHeight());
+HUD.setColor(Color.green);
+add(HUD);
+
+
+var bombs = [];
+var missiles = [];
+var terrain = [];
+
+var clicking = false;
+
+var terrC = 0;
+
+var score = 0;
+var scoretxt = new Text("Score: " + score, "18pt Arial");
+scoretxt.setPosition(scoretxt.getWidth()/4, getHeight() - scoretxt.getHeight()/2 - 2);
+add(scoretxt);
+
+var lives = 3;
+var life = new Text("Lives: " + lives, "18pt Arial");
+life.setPosition(getWidth()/2, getHeight() - life.getHeight()/2 - 2);
+add(life);
+
+
+var EXPLOSION_RATE = 2;
+var EXPLOSION_RADIUS = 20;
+var START_RADIUS = 1;
+var num = 0;
+var arr = [];
+
+function explosion(radius, x, y, color){
+    var c = new Circle(radius);
+    c.setPosition(x, y);
+    c.setColor(color);
+    c.upRad = true;
+    add(c);
+    return c;
+}
+
+var plane = new WebImage("https://codehs.com/static/img/library/objects/helicopter.png");
+plane.setPosition(plane.getWidth()/2, getHeight()/3);
+plane.setSize(50, 35);
+add(plane);
+
+function start(){
+    setTimer(game, 50);
+    mouseMoveMethod(movePlane);
+    mouseDownMethod(onDown);
+    //mouseUpMethod(onUp);
+    
+}
+
+function onDown(e){
+    //clicking = true;
+    var bomb = new Circle(6);
+    bomb.setPosition(plane.getX() + plane.getWidth()/2, plane.getY() + plane.getHeight());
+    bomb.setColor(new Color(84, 84, 84));
+    bomb.dy = 0;
+    bomb.ddy = 0.4;
+    add(bomb);
+    bombs.push(bomb);
+}
+/*
+function onUp(e){
+    clicking = false;
+}
+*/
+
+function movePlane(e){
+    plane.setPosition(e.getX() - plane.getWidth()/2, e.getY() - plane.getHeight()/2);
+}
+
+function game(){
+    terrC++;
+    if (terrC == 20){
+        var enemy = new Rectangle(40, Randomizer.nextInt(30, 50));
+        enemy.setPosition(getWidth() - enemy.getWidth()/2, HUD.getY() - enemy.getHeight());
+        enemy.setColor(Color.grey);
+        enemy.time = Randomizer.nextInt(18, 126);
+        enemy.dx = -3;
+        add(enemy);
+        terrain.push(enemy);
+        terrC = 0;
+    }
+    
+    for (var t = 0; t < terrain.length; t++){
+        var buck = terrain[t];
+        buck.move(buck.dx, 0);
+        if (buck.getX() + buck.getWidth()/2 < 0){
+            remove(buck);
+            terrain.remove(t);
+        } else {
+            buck.time--;
+            if (buck.time == 0){
+                var mis = new Oval(10, 30);
+                mis.setPosition(buck.getX() + buck.getWidth()/2, buck.getY());
+                mis.dy = Randomizer.nextInt(-4, -2);
+                add(mis);
+                missiles.push(mis);
+            }
+        }
+    }
+    
+    for (var m = 0; m < missiles.length; m++){
+        var cur = missiles[m];
+        cur.move(0, cur.dy);
+        var log = getElementAt(cur.getX(), cur.getY() - cur.getHeight()/2 - 1);
+        if (log != null){
+            if (log.getType() == "WebImage"){
+                lives--;
+                life.setText("Lives: " + lives);
+                remove(cur);
+                missiles.remove(m);
+            }
+        }
+    }
+    
+    /*if (clicking){
+        var bomb = new Circle(6);
+        bomb.setPosition(plane.getX() + plane.getWidth()/2, plane.getY() + plane.getHeight());
+        bomb.setColor(new Color(84, 84, 84));
+        bomb.dy = 0;
+        bomb.ddy = 0.4;
+        add(bomb);
+        bombs.push(bomb);
+    }*/
+    
+    for (var b = 0; b < bombs.length; b++){
+        var pot = bombs[b];
+        var lin = getElementAt(pot.getX(), pot.getY() + pot.getRadius() + 1);
+        if (lin != null){
+            if (lin.getType() == "Rectangle"){
+                if (lin.getColor() == Color.grey){
+                    var makeNew = explosion(0, pot.getX(), pot.getY(), Randomizer.nextColor());
+                    arr.push(makeNew);
+                    remove(pot);
+                    bombs.remove(b);
+                    remove(lin);
+                    score++;
+                    scoretxt.setText("Score: " + score);
+                } else {
+                    remove(pot);
+                    bombs.remove(b);
+                }
+            } else if (lin.getType() == "Circle"){
+                remove(pot);
+                bombs.remove(b);
+            }
+        } else {
+            pot.dy += pot.ddy;
+            pot.move(0, pot.dy);
+            if (pot.getY() + pot.getRadius() > HUD.getY()){
+                remove(pot);
+                bombs.remove(b);
+            }
+        }
+    }
+    
+    
+    for (var i = 0; i < arr.length; i++){
+        var part = arr[i];
+        var rad = part.getRadius();
+        if (rad == EXPLOSION_RADIUS){
+            part.upRad = false;
+        } else if (rad == 0 && part.upRad != true){
+            remove(part);
+            arr.remove(i);
+        }
+        if (part.upRad == true){
+            part.setRadius(rad + EXPLOSION_RATE);
+        } else {
+            part.setRadius(rad - EXPLOSION_RATE);
+        }
+        
+        var blue1 = Randomizer.nextInt(133, 209);
+        var blue2 = Randomizer.nextInt(176, 196);
+        var blue3 = 0;
+        
+        var color = new Color(blue1, blue2, blue3);
+        part.setColor(color);
+    }
+    
+    if (lives == 0){
+        stopTimer(game);
+        var over = new Text("Game over", "20pt Arial");
+        over.setPosition(getWidth()/2 - over.getWidth()/2, getHeight()/2);
+        add(over);
+    } else {
+        if (score == 50){
+            stopTimer(game);
+            var win = new Text("You win!", "20pt Arial");
+            win.setPosition(getWidth()/2 - win.getWidth()/2, getHeight()/2);
+            if (lives == 3){
+                win.setColor(new Color(252, 212, 81));
+            } else if (lives == 2){
+                win.setColor(new Color(179, 179, 179));
+            } else if (lives == 1){
+                win.setColor(new Color(184, 115, 81));
+            }
+            add(win);
+        }
+    }
+}
