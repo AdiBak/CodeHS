@@ -1,0 +1,168 @@
+var arr = [];
+
+var asters = [];
+
+var count = 0;
+
+var dx;
+var dy;
+
+var delay = 60;
+
+var target = 12;
+
+var maul = 2000;
+
+var ddy = 0.1;
+
+var limit = 120;
+
+
+var yoki = 0;
+
+var freq = 1;
+
+var grav = false;
+
+
+var rar;
+
+var score = 0;
+var txt = new Text("Score: " + score, "12pt Arial");
+txt.setPosition(5, getHeight() - txt.getHeight()/2 - 2);
+txt.setColor(Color.white);
+add(txt);
+
+
+var radii = 0;
+var rade = new Text("Radii Passed: " + radii, "12pt Arial");
+rade.setPosition(getWidth()/2, getHeight() - rade.getHeight()/2 - 2);
+rade.setColor(Color.white);
+add(rade);
+
+function start(){
+    setBackgroundColor(Color.black);
+    setTimer(game, 50);
+    mouseClickMethod(onC);
+    
+    dx = 4;
+    dy = 4;
+}
+
+function onC(e){
+    if (e.getY() > getHeight() * 7/8){
+        var c = new Circle(5);
+        c.setPosition(e.getX(), e.getY());
+        c.setColor(Color.red);
+        add(c);
+        arr.push(c);
+    }
+}
+
+function game(){
+    count++;
+    if (count == delay){
+        for (var d = 0; d < freq; d++){
+            var as = new Circle(20);
+            as.setPosition(Randomizer.nextInt(as.getRadius(), getWidth() - as.getRadius()), 0);
+            as.setColor(Color.grey);
+            as.dx = 2;
+            as.dy = 4;
+         
+            add(as);
+            asters.push(as);
+            radii += as.getRadius();
+            rade.setText("Radii Passed: " + radii);
+                
+        }
+        count = 0;
+        
+        
+    }
+    dx = Randomizer.nextFloat(-4, 4);
+    dy = Randomizer.nextFloat(2, 5);
+    
+    
+    for (var i = 0; i < arr.length; i++){
+        var cur = arr[i];
+        cur.move(0, -4);
+        if (cur.getY() < 0){
+            remove(cur);
+        }
+        var el = getElementAt(cur.getX(), cur.getY() - cur.getRadius() - 1);
+        if (el != null){
+            if (el.getType() == "Circle"){
+                el.setRadius(el.getRadius() - 5);
+                score += 0.25;
+                txt.setText("Score: " + score);
+                
+                radii -= 20/4;
+                rade.setText("Radii Passed: " + radii);
+            }
+        } 
+    }
+    
+    
+    for (var j = 0; j < asters.length; j++){
+        var par = asters[j];
+        par.move(par.dx, par.dy);
+        if (par.getRadius() <= 0){
+            remove(par);
+            asters.remove(j);
+        } else {
+           /* if (par.getY() > getHeight()){
+                rar = par.getRadius();
+                radii += rar;
+                rade.setText("Radii Passed: " + radii);
+                remove(par);
+                asters.remove(j);
+            }*/
+            if (par.getX() < 0){
+                par.dx = -par.dx;
+            }
+            if (par.getX() > getWidth()){
+                par.dx = -par.dx;
+            }
+            if (par.getY() < 0){
+                par.dy = -par.dy;
+            }
+            if (par.getY() > getHeight()){
+                par.dy = -par.dy;
+            }
+        }
+        
+        
+    }
+    if (freq == 2){
+        limit = 160;
+    }
+    if (freq == 3){
+        limit = 200;
+    }
+    
+    if (score == target){
+        if (freq <= 3){
+            freq++;
+        }
+        target += 12;
+    }
+    
+    if (radii >= limit){
+        stopTimer(game);
+        var ovr = new Text("Game over.", "13pt Arial");
+        ovr.setPosition(getWidth()/2 - ovr.getWidth()/2, getHeight()/2);
+        ovr.setColor(Color.CYAN);
+        add(ovr);
+        
+        var bronze = new Color(205, 127, 50);
+        
+        if (score >= 0 && score < 20){
+            txt.setColor(bronze);
+        } else if (score >= 20 && score < 40){
+            txt.setColor(Color.grey);
+        } else if (score >= 40){
+            txt.setColor(Color.yellow);
+        }
+    }
+    
+}
