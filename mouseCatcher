@@ -1,0 +1,266 @@
+/*
+ADD RANDOMIZED POSITION FOR ENEMIES EACH FRAME INSTEAD OF GOING TO MOUSE POS.
+
+*/
+
+setSize(410, 500);
+
+
+
+
+var eX;
+var eY;
+
+var arr = [];
+var left = [];
+var tops = [];
+var rits = [];
+
+var passedL1 = false;
+var passedL2 = false;
+var passedL3 = false;
+var passedL4 = false;
+
+var HUD = new Rectangle(getWidth(), getHeight()/10);
+HUD.setPosition(0, getHeight() - HUD.getHeight());
+add(HUD);
+
+var count = 0;
+var time = 0;
+var timer = new Text("Time: " + time, "18pt Arial");
+timer.setPosition(getWidth() - timer.getWidth() - 80, getHeight() - 9);
+timer.setColor(Color.WHITE);
+add(timer);
+
+var lives = 5;
+var life = new Text("Lives: " + lives, "18pt Arial");
+life.setPosition(getWidth()/2 - life.getWidth()/2 - 20, getHeight() - 9);
+life.setColor(Color.WHITE);
+add(life);
+
+
+var lvl = 1;
+var lvlt = new Text("Lvl: " + lvl, "18pt Arial");
+lvlt.setPosition(lvlt.getWidth()/2, getHeight() - 9);
+lvlt.setColor(Color.WHITE);
+add(lvlt);
+
+var benemy = new Rectangle(getWidth()/20, getWidth()/20);
+benemy.setPosition(getWidth()/2, HUD.getY() - benemy.getHeight() - 1);
+benemy.setColor(Color.GREEN);
+add(benemy);
+
+var leny = new Rectangle(getWidth()/20, getWidth()/20);
+leny.setPosition(0, getHeight()/2);
+leny.setColor(Color.GREEN);
+
+var teny = new Rectangle(getWidth()/20, getWidth()/20);
+teny.setPosition(getWidth()/2, 1);
+teny.setColor(Color.GREEN);
+
+var right = new Rectangle(getWidth()/20, getWidth()/20);
+right.setPosition(getWidth() - 21, getHeight()/2);
+right.setColor(Color.GREEN);
+
+
+var player = new Circle(getWidth()/40);
+player.setPosition(getWidth()/2, getHeight()/2);
+player.setColor(Color.red);
+add(player);
+
+function start(){
+    var direct = readLine("Move the red circle with mouse/finger. Try dodging the black lines. Click 'ok' to continue. ");
+    
+    mouseMoveMethod(onMove);    
+    setTimer(game, 50);
+}
+
+function onMove(e){
+    eX = e.getX();
+    eY = e.getY();
+    player.setPosition(e.getX(), e.getY());
+    
+    /*benemy.setPosition(player.getX(), benemy.getY());
+    leny.setPosition(leny.getX(), player.getY());
+    teny.setPosition(player.getX(), teny.getY());
+    right.setPosition(right.getX(), player.getY());*/
+}
+
+function game(){
+    count = (count + 1) % 20;
+    if (count == 0){
+        time++;
+        timer.setText("Time: " + time);
+        
+        benemy.setPosition(Randomizer.nextInt(1, getWidth() - benemy.getWidth() - 1), benemy.getY());
+        
+        leny.setPosition(leny.getX(), Randomizer.nextInt(1, HUD.getY() - leny.getHeight() - 1));
+        
+        teny.setPosition(Randomizer.nextInt(1, getWidth() - teny.getWidth() - 1), teny.getY());
+        
+        right.setPosition(right.getX(), Randomizer.nextInt(1, HUD.getY() - right.getHeight() - 1));
+    }
+    
+    if (time == 10){
+        lvl++;
+        lvlt.setText("Lvl: " + lvl);
+        time = 0;
+    }
+    
+    if (lvl == 2){
+        passedL1 = true;
+        add(leny);
+    }
+    if (lvl == 3){
+        passedL2 = true;
+        add(teny);
+    }
+    if (lvl == 4){
+        passedL3 = true;
+        add(right);
+    }
+    if (lvl == 5){
+        var win = new Text("You win");
+        win.setPosition(getWidth()/3, getHeight()/2);
+        add(win);
+        stopTimer(game);
+    }
+    
+    if (Randomizer.nextInt(0, 100) < 10){
+        shoot();
+    }
+    
+    for (var i = 0; i < arr.length; i++){
+        var cur = arr[i];
+        cur.move(cur.dx, cur.dy);
+        var lol = getCollider(cur);
+        if (lol != null && lol.getType() == "Circle" && lol.getColor() == Color.red){
+            lives--;
+            life.setText("Lives: " + lives);
+            remove(cur);
+            arr.remove(i);
+        }
+        if (cur.getEndY() < 0){
+            remove(cur);
+            arr.remove(i);
+        }
+    }
+    
+    for (var j = 0; j < left.length; j++){
+        var tur = left[j];
+        tur.move(tur.dx, tur.dy);
+        var tol = getCollider(tur);
+        if (tol != null && tol.getType() == "Circle" && tol.getColor() == Color.red){
+            lives--;
+            life.setText("Lives: " + lives);
+            remove(tur);
+            left.remove(j);
+        }
+        if (tur.getEndX() > getWidth()){
+            remove(tur);
+            left.remove(j);
+        }
+    }
+    
+    for (var t = 0; t < tops.length; t++){
+        var bur = tops[t];
+        bur.move(bur.dx, bur.dy);
+        var bol = getCollider(bur);
+        if (bol != null && bol.getType() == "Circle" && bol.getColor() == Color.red){
+            lives--;
+            life.setText("Lives: " + lives);
+            remove(bur);
+            tops.remove(t);
+        }
+        if (bur.getY() > getHeight()){
+            remove(bur);
+            tops.remove(t);
+        }
+    }
+    
+    for (var lo = 0; lo < rits.length; lo++){
+        var rok = rits[lo];
+        rok.move(rok.dx, rok.dy);
+        var col = getCollider(rok);
+        if (col != null && col.getType() == "Circle" && col.getColor() == Color.red){
+            lives--;
+            life.setText("Lives: " + lives);
+            remove(rok);
+            rits.remove(lo);
+        }
+        if (rok.getX() < 0){
+            remove(rok);
+            rits.remove(lo);
+        }
+    }
+    
+    
+    if (lives == 0){
+        stopTimer(game);
+        var lose = new Text("Game over");
+        lose.setPosition(getWidth()/3, getHeight()/2);
+        add(lose);
+    }
+}
+
+function shoot(){
+    var m = new Line(benemy.getX() + benemy.getWidth()/2, benemy.getY(), benemy.getX() + benemy.getWidth()/2, benemy.getY() - 20);
+    m.dy = -3;
+    m.dx = 0;
+    add(m);    
+    arr.push(m);
+    
+    if (passedL1){
+        var t = new Line(leny.getX(), leny.getY() + leny.getHeight()/2, leny.getX() + 20, leny.getY() + leny.getHeight()/2);
+        t.dx = 3;
+        t.dy = 0;
+        add(t);
+        left.push(t);
+    }
+    if (passedL2){
+        var k = new Line(teny.getX() + teny.getWidth()/2, teny.getY() + teny.getHeight() + 1, teny.getX() + teny.getWidth()/2, teny.getY() + teny.getHeight() + 21);
+        k.dx = 0;
+        k.dy = 3;
+        add(k);
+        tops.push(k);
+    }
+    if (passedL3){
+        var rig = new Line(right.getX() - 1, right.getY() + right.getHeight()/2, right.getX() - 21, right.getY() + right.getHeight()/2);
+        rig.dx = -3;
+        rig.dy = 0;
+        add(rig);
+        rits.push(rig);
+    }
+}
+
+function getCollider(line){
+    if (line.getType() == "Line"){
+        if (line.dx == 0){
+            if (line.dy == 3){
+                var bot = getElementAt(line.getX(), line.getEndY() + 1);
+                if (bot != null){
+                    return bot;
+                }
+            } else if (line.dy == -3){
+                var top = getElementAt(line.getX(), line.getEndY() - 1);
+                if (top != null){
+                    return top;
+                }
+            }
+        }
+        if (line.dy == 0){
+            if (line.dx == 3){
+                 var riv = getElementAt(line.getEndX() + 1, line.getY());
+                 if (riv != null){
+                     return riv;
+                 }
+            } else if (line.dx == -3){
+                var lef = getElementAt(line.getEndX() - 1, line.getY());
+                if (lef != null){
+                    return lef;
+                }
+            }
+        }
+        
+    }
+}
