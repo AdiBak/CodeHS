@@ -1,0 +1,102 @@
+var l = new Line(0, getHeight()/2, 30, getHeight()/2);
+add(l);
+
+var dx = 3;
+
+var go = new Circle(0);
+go.setPosition(getWidth()/2, getHeight()/3);
+go.setColor(Color.grey);
+add(go);
+
+var targ = 5;
+
+var dy = -3;
+
+var arr = [];
+
+function start(){
+    mouseClickMethod(click);    
+    setTimer(game, 50);
+}
+
+function click(e){
+    var m = new Circle(5);
+    m.setPosition(e.getX(), getHeight() * 5/6);
+    m.setColor(Color.red);
+    m.tarY = e.getY();
+    add(m);
+    arr.push(m);
+}
+
+function game(){
+    for (var i = 0; i < arr.length; i++){
+        var c = arr[i];
+        c.move(0, dy);
+        if (c.getY() < c.tarY){
+            if (c.getY() < getHeight()/2){
+                go.setRadius(go.getRadius() + 1);
+            }
+            remove(c);
+            arr.remove(i);
+        }
+        var lol = getElementAt(c.getX(), c.getY() - c.getRadius() - 1);
+        if (lol != null){
+            if (lol.getType() == "Line"){
+                stopTimer(game);
+            }
+        }
+    }
+    
+    if (l.getX() < 0 || l.getEndX() > getWidth()){
+        dx = -dx;
+    }
+    l.move(dx, 0);
+    
+    if (go.getRadius() == targ){
+        l.setEndpoint(l.getEndX() + 1, l.getEndY());
+        dy -= 0.5;
+        if (dx < 0){
+            dx--;
+        } else {
+            dx++;
+        }
+        targ += 5;
+    }
+    
+    var el = getLineColl();
+    if (el != null){
+        if (el.getType() == "Circle"){
+            if (el.getColor() == Color.grey){
+                stopTimer(game);
+                var win = new Text("You win", "18pt Arial");
+                win.setPosition(getWidth()/4, getHeight() * 3/4);
+                add(win);
+            } else if (el.getColor() == Color.red){
+                stopTimer(game);
+            }
+        }
+    }
+}
+
+function getLineColl(){
+    var left = getElementAt(l.getX() - 1, l.getY());
+    if (left != null){
+        return left;
+    }
+    
+    var right = getElementAt(l.getEndX() + 1, l.getEndY());
+    if (right != null){
+        return right;
+    }
+    
+    
+    
+   // var width = l.getEndX() - l.getX();
+    
+    /*var center = getElementAt(l.getX() + (l.getEndX() - l.getX())/2, l.getY() + 1);
+    if (center != null){
+        return center;
+    }
+    */
+    return null;
+}
