@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My CodeHS Arcade</title>
+    <meta
+      name="description"
+      content="My collection of JavaScript Graphics arcade games—browse the rules and play."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/arcade.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="logo" href="index.html">My <span>CodeHS Arcade</span></a>
+      <a class="nav-link" href="https://github.com/AdiBak/CodeHS" target="_blank" rel="noopener"
+        >Source on GitHub</a
+      >
+    </header>
+
+    <section class="hero">
+      <span class="hero__eyebrow">A personal game collection</span>
+      <h1>Seventeen games. One arcade.</h1>
+      <p>
+        Dodgers, slicers, shooters, puzzles, and a full lockdown escape—hand-built with JavaScript
+        Graphics, each with its own rules, all playable right here.
+      </p>
+    </section>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input
+          id="search"
+          type="search"
+          placeholder="Search games…"
+          aria-label="Search games"
+          autocomplete="off"
+        />
+      </div>
+      <div class="filters" role="group" aria-label="Filter by genre">
+        <button class="filter-chip is-active" type="button" data-genre="all">All</button>
+        <button class="filter-chip" type="button" data-genre="action">Action</button>
+        <button class="filter-chip" type="button" data-genre="reflex">Reflex</button>
+        <button class="filter-chip" type="button" data-genre="puzzle">Puzzle</button>
+        <button class="filter-chip" type="button" data-genre="adventure">Adventure</button>
+      </div>
+    </div>
+
+    <div class="meta-row">
+      <span id="game-count">17 games</span>
+      <span>Click a card to play</span>
+    </div>
+
+    <main id="game-grid" class="game-grid" aria-label="Game library"></main>
+
+    <footer class="site-footer">
+      Built with the
+      <a href="https://codehs.github.io/chs-js-lib/" target="_blank" rel="noopener"
+        >CodeHS JavaScript library</a
+      >. Original sources live in this repo root; playable copies are in <code>games/</code>.
+    </footer>
+
+    <script src="js/catalog.js"></script>
+    <script src="js/hub.js"></script>
+  </body>
+</html>

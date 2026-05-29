@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Play · My CodeHS Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/arcade.css" />
+  </head>
+  <body class="play-page">
+    <header class="site-header">
+      <a class="logo" href="index.html">← My <span>CodeHS Arcade</span></a>
+    </header>
+
+    <main class="play-main">
+      <section class="play-stage">
+        <div id="canvas-wrap" class="canvas-wrap">
+          <div id="loader" class="loader">Loading game…</div>
+          <canvas id="game-canvas" width="400" height="400"></canvas>
+        </div>
+        <p id="play-error" class="play-error" hidden></p>
+        <div class="play-actions">
+          <button id="fullscreen-btn" class="btn" type="button">Fullscreen canvas</button>
+          <a class="btn btn--primary" href="index.html">All games</a>
+        </div>
+      </section>
+
+      <aside class="play-info">
+        <h1 id="game-title">Game</h1>
+        <p id="game-tagline"></p>
+        <span id="game-controls" class="controls-badge"></span>
+        <div class="rules-box" style="margin-top: 1.25rem">
+          <strong>How to play</strong>
+          <ul id="game-rules"></ul>
+        </div>
+        <div id="game-tips" class="hint-box" hidden style="margin-top: 1rem"></div>
+      </aside>
+    </main>
+
+    <script
+      src="https://unpkg.com/chs-js-lib@latest/dist/chs.iife.js"
+      type="text/javascript"
+    ></script>
+    <script src="js/local-assets.js"></script>
+    <script src="js/catalog.js"></script>
+    <script src="js/play.js"></script>
+  </body>
+</html>
